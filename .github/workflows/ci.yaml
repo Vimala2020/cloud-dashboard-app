@@ -1,4 +1,4 @@
-name: DevOps Dashboard CI
+name: DevOps Dashboard CI-CD
 
 on:
   push:
@@ -29,20 +29,29 @@ jobs:
       - name: Run syntax check
         run: node -c index.js
 
-      # 5. Docker build (THIS IS YOUR MAIN CHECK)
+      # 5. Docker login
+      - name: Login to DockerHub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      # 6. Build Docker image
       - name: Build Docker image
         run: |
-          echo "Starting Docker build..."
-          docker build -t cloud-dashboard-app:ci .
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/cloud-dashboard-app:latest .
 
-      # 6. Verify Docker image exists
-      - name: Check Docker image
+      # 7. Verify Docker image
+      - name: Check Docker images
         run: docker images
 
-      # 7. Run container test (optional but powerful)
+      # 8. Run container test
       - name: Run container test
         run: |
-          docker run -d -p 3000:3000 --name test-app cloud-dashboard-app:ci
+          docker run -d -p 3000:3000 --name test-app ${{ secrets.DOCKER_USERNAME }}/cloud-dashboard-app:latest
           sleep 5
           curl -f http://localhost:3000/ || (echo "App failed to start" && exit 1)
           docker stop test-app
+          docker rm test-app
+
+      # 9. Push Docker image
+      - name: Push Docker image
+        run: |
+          docker push ${{ secrets.DOCKER_USERNAME }}/cloud-dashboard-app:latest
