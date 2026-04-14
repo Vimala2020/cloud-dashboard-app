@@ -2,33 +2,47 @@ name: DevOps Dashboard CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout code
+      # 1. Checkout code
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Step 2: Setup Node.js
+      # 2. Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
-      # Step 3: Install dependencies
+      # 3. Install dependencies
       - name: Install dependencies
         run: npm install
 
-      # Step 4: Basic app validation
-      - name: Run Node syntax check
+      # 4. Validate Node app
+      - name: Run syntax check
         run: node -c index.js
 
-      # Step 5: Build Docker image
+      # 5. Docker build (THIS IS YOUR MAIN CHECK)
       - name: Build Docker image
-        run: docker build -t cloud-dashboard-app .
+        run: |
+          echo "Starting Docker build..."
+          docker build -t devops-dashboard-app:ci .
+
+      # 6. Verify Docker image exists
+      - name: Check Docker image
+        run: docker images
+
+      # 7. Run container test (optional but powerful)
+      - name: Run container test
+        run: |
+          docker run -d -p 3000:3000 --name test-app devops-dashboard-app:ci
+          sleep 5
+          curl -f http://localhost:3000/ || (echo "App failed to start" && exit 1)
+          docker stop test-app
