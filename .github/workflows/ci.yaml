@@ -1,0 +1,34 @@
+name: DevOps Dashboard CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Step 2: Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # Step 4: Basic app validation
+      - name: Run Node syntax check
+        run: node -c index.js
+
+      # Step 5: Build Docker image
+      - name: Build Docker image
+        run: docker build -t cloud-dashboard-app .
