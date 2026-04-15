@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloud-dashboard
+  labels:
+    app: cloud-dashboard
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cloud-dashboard
+  template:
+    metadata:
+      labels:
+        app: cloud-dashboard
+    spec:
+      containers:
+        - name: cloud-dashboard
+          image: vimala92/cloud-dashboard-app:latest
+          ports:
+            - containerPort: 3000
